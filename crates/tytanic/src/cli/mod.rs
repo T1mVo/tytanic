@@ -11,6 +11,7 @@ use commands::FontOptions;
 use commands::PackageOptions;
 use termcolor::Color;
 use thiserror::Error;
+use tytanic_core::config::SystemConfig;
 use tytanic_core::doc;
 use tytanic_core::project::ConfigError;
 use tytanic_core::project::ManifestError;
@@ -130,6 +131,15 @@ impl Context<'_> {
         };
 
         let mut project = project.load()?;
+
+        let system_config = match SystemConfig::collect_user() {
+            Ok(config) => config.unwrap_or_default(),
+            Err(err) => {
+                writeln!(self.ui.error()?, "Failed to parse config:\n{err}")?;
+                eyre::bail!(OperationFailure);
+            }
+        };
+        project = project.with_system_config(system_config);
 
         'vcs: {
             let kind = match self.args.vcs {

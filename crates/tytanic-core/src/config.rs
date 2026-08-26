@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::io;
+use std::path::PathBuf;
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -33,12 +34,18 @@ impl SystemConfig {
             return Ok(None);
         };
 
-        let config = config_dir.join(CONFIG_SUB_DIRECTORY).join("config.toml");
-        let Some(content) = fs::read_to_string(config).ignore(io_not_found)? else {
+        let config_path = config_dir.join(CONFIG_SUB_DIRECTORY).join("config.toml");
+
+        Self::collect_in(config_path)
+    }
+
+    /// Reads the system config from the given config file.
+    fn collect_in(path: PathBuf) -> Result<Option<Self>, Error> {
+        let Some(content) = fs::read_to_string(&path).ignore(io_not_found)? else {
             return Ok(None);
         };
 
-        Ok(toml::from_str(&content)?)
+        toml::from_str(&content).map_err(|error| Error::Toml { path, error })
     }
 }
 
@@ -162,9 +169,14 @@ pub enum Direction {
 /// Returned by [`SystemConfig::collect_user`].
 #[derive(Debug, Error)]
 pub enum Error {
-    /// The given key is not valid or the config.
-    #[error("a toml parsing error occurred")]
-    Toml(#[from] toml::de::Error),
+    /// The user config file could not be parsed.
+    #[error("a toml parsing error occurred at {path:?}:\n{error}")]
+    Toml {
+        /// The path of the config file that failed to parse.
+        path: PathBuf,
+        /// The error that occurred while parsing the config.
+        error: toml::de::Error,
+    },
 
     /// An io error occurred.
     #[error("an io error occurred")]
