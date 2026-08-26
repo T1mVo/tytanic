@@ -22,6 +22,7 @@ use tytanic_utils::result::io_not_found;
 
 use crate::TOOL_NAME;
 use crate::config::ProjectConfig;
+use crate::config::SystemConfig;
 use crate::test::Id;
 
 pub mod vcs;
@@ -119,6 +120,7 @@ impl ShallowProject {
             base: self,
             manifest,
             config,
+            system_config: SystemConfig::default(),
             unit_test_template,
         })
     }
@@ -207,6 +209,7 @@ pub struct Project {
     base: ShallowProject,
     manifest: Option<PackageManifest>,
     config: ProjectConfig,
+    system_config: SystemConfig,
     unit_test_template: Option<String>,
 }
 
@@ -220,6 +223,7 @@ impl Project {
             },
             manifest: None,
             config: ProjectConfig::default(),
+            system_config: SystemConfig::default(),
             unit_test_template: None,
         }
     }
@@ -239,6 +243,12 @@ impl Project {
     /// Attach a parsed project config to this project.
     pub fn with_config(mut self, config: ProjectConfig) -> Self {
         self.config = config;
+        self
+    }
+
+    /// Attach a parsed system config to this project.
+    pub fn with_system_config(mut self, system_config: SystemConfig) -> Self {
+        self.system_config = system_config;
         self
     }
 
@@ -283,6 +293,11 @@ impl Project {
     /// The fully parsed project config layer.
     pub fn config(&self) -> &ProjectConfig {
         &self.config
+    }
+
+    /// The fully parsed system config layer.
+    pub fn system_config(&self) -> &SystemConfig {
+        &self.system_config
     }
 
     /// Returns the unit test template, that is, the source template to
