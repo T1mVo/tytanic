@@ -274,4 +274,52 @@ mod tests {
             ])
         );
     }
+
+    // Verify that an absent system config is read as `None`.
+    #[test]
+    fn system_config_absent() {
+        tytanic_utils::fs::TempTestEnv::run_no_check(
+            |root| root,
+            |dir| {
+                let config_path: PathBuf =
+                    dir.join(CONFIG_SUB_DIRECTORY).join("config.toml").into();
+                assert_eq!(SystemConfig::collect_in(config_path).unwrap(), None);
+            },
+        );
+    }
+
+    // Verify that the system config file is loaded from the config directory.
+    #[test]
+    fn system_config_is_collected() {
+        tytanic_utils::fs::TempTestEnv::run_no_check(
+            |root| root.setup_file(format!("{}/config.toml", CONFIG_SUB_DIRECTORY), ""),
+            |dir| {
+                let config_path: PathBuf =
+                    dir.join(CONFIG_SUB_DIRECTORY).join("config.toml").into();
+                assert_eq!(
+                    SystemConfig::collect_in(config_path).unwrap(),
+                    Some(SystemConfig {})
+                );
+            },
+        );
+    }
+
+    // Verify that an invalid system config yields a parse error.
+    #[test]
+    fn system_config_invalid() {
+        tytanic_utils::fs::TempTestEnv::run_no_check(
+            |root| {
+                root.setup_file(
+                    format!("{}/config.toml", CONFIG_SUB_DIRECTORY),
+                    "invalid-key = true\n",
+                )
+            },
+            |dir| {
+                let config_path: PathBuf =
+                    dir.join(CONFIG_SUB_DIRECTORY).join("config.toml").into();
+                let err = SystemConfig::collect_in(config_path).unwrap_err();
+                assert!(matches!(err, Error::Toml { .. }));
+            },
+        );
+    }
 }
