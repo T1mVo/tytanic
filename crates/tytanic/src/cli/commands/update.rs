@@ -105,23 +105,27 @@ pub fn run(ctx: &mut Context, args: &Args) -> eyre::Result<()> {
         .export
         .dir
         .map(OptionDelegate::into_native)
-        .unwrap_or(project.config().defaults.direction)
+        .unwrap_or(project.project_config().defaults.direction)
     {
         Direction::Ltr => Origin::TopLeft,
         Direction::Rtl => Origin::TopRight,
     };
 
-    let pixel_per_pt = render::ppi_to_ppp(args.export.ppi.unwrap_or(project.config().defaults.ppi));
+    let pixel_per_pt = render::ppi_to_ppp(
+        args.export
+            .ppi
+            .unwrap_or(project.project_config().defaults.ppi),
+    );
 
     let max_delta = args
         .compare
         .max_delta
-        .unwrap_or(project.config().defaults.max_delta);
+        .unwrap_or(project.project_config().defaults.max_delta);
 
     let max_deviation = args
         .compare
         .max_deviations
-        .unwrap_or(project.config().defaults.max_deviations);
+        .unwrap_or(project.project_config().defaults.max_deviations);
 
     let runner = Runner::new(
         &project,

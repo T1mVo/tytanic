@@ -191,8 +191,8 @@ mod tests {
 
     // Verify that the `tool.tytanic.default` section in `typst.toml` is optional.
     #[test]
-    fn config_defaults_section_is_optional() {
-        let config = r#"
+    fn project_config_defaults_section_is_optional() {
+        let raw_project_config = r#"
         [package]
         name = "testpackage"
         version = "0.1.0"
@@ -202,7 +202,7 @@ mod tests {
         tests = "test_dir"
         "#;
 
-        let manifest = toml::from_str::<PackageManifest>(config).unwrap();
+        let manifest = toml::from_str::<PackageManifest>(raw_project_config).unwrap();
         let project_config = ProjectConfig::deserialize(
             manifest
                 .tool
@@ -218,8 +218,8 @@ mod tests {
     }
 
     #[test]
-    fn default_use_system_fonts_is_configurable() {
-        let config = r#"
+    fn project_config_default_use_system_fonts_is_configurable() {
+        let raw_project_config = r#"
         [package]
         name = "testpackage"
         version = "0.1.0"
@@ -229,7 +229,7 @@ mod tests {
         use-system-fonts = true
         "#;
 
-        let manifest = toml::from_str::<PackageManifest>(config).unwrap();
+        let manifest = toml::from_str::<PackageManifest>(raw_project_config).unwrap();
         let project_config = ProjectConfig::deserialize(
             manifest
                 .tool
@@ -244,8 +244,8 @@ mod tests {
     }
 
     #[test]
-    fn default_inputs_is_configurable() {
-        let config = r#"
+    fn project_config_default_inputs_is_configurable() {
+        let raw_project_config = r#"
         [package]
         name = "testpackage"
         version = "0.1.0"
@@ -255,7 +255,7 @@ mod tests {
         inputs = { key1 = "value1", key2 = "value2" }
         "#;
 
-        let manifest = toml::from_str::<PackageManifest>(config).unwrap();
+        let manifest = toml::from_str::<PackageManifest>(raw_project_config).unwrap();
         let project_config = ProjectConfig::deserialize(
             manifest
                 .tool

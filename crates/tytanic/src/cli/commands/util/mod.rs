@@ -71,5 +71,5 @@ fn project_defaults(ctx: &Context) -> eyre::Result<ProjectDefaults> {
         return Ok(ProjectDefaults::default());
     };
 
-    Ok(project.load()?.config().defaults.clone())
+    Ok(project.load()?.project_config().defaults.clone())
 }

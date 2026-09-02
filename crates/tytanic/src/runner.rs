@@ -391,7 +391,7 @@ impl<F> UnitTestRunner<'_, '_, '_, F> {
         let default_inputs = self
             .project_runner
             .project
-            .config()
+            .project_config()
             .defaults
             .inputs
             .iter()
