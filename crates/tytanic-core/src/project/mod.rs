@@ -107,19 +107,19 @@ impl ShallowProject {
     #[tracing::instrument]
     pub fn load(self) -> Result<Project, LoadError> {
         let manifest = self.parse_manifest()?;
-        let config = manifest
+        let project_config = manifest
             .as_ref()
             .map(|m| self.parse_config(m))
             .transpose()?
             .flatten()
             .unwrap_or_default();
 
-        let unit_test_template = self.read_unit_test_template(&config)?;
+        let unit_test_template = self.read_unit_test_template(&project_config)?;
 
         Ok(Project {
             base: self,
             manifest,
-            config,
+            project_config,
             system_config: SystemConfig::default(),
             unit_test_template,
         })
@@ -149,7 +149,7 @@ impl ShallowProject {
         &self,
         manifest: &PackageManifest,
     ) -> Result<Option<ProjectConfig>, ManifestError> {
-        let config = manifest
+        let project_config = manifest
             .tool
             .sections
             .get(TOOL_NAME)
@@ -157,11 +157,11 @@ impl ShallowProject {
             .map(ProjectConfig::deserialize)
             .transpose()?;
 
-        if let Some(config) = &config {
+        if let Some(config) = &project_config {
             validate_config(&self.root, config)?;
         }
 
-        Ok(config)
+        Ok(project_config)
     }
 
     /// Reads the project's unit test template if it exists. Returns `None` if
@@ -208,7 +208,7 @@ impl ShallowProject {
 pub struct Project {
     base: ShallowProject,
     manifest: Option<PackageManifest>,
-    config: ProjectConfig,
+    project_config: ProjectConfig,
     system_config: SystemConfig,
     unit_test_template: Option<String>,
 }
@@ -222,7 +222,7 @@ impl Project {
                 vcs: None,
             },
             manifest: None,
-            config: ProjectConfig::default(),
+            project_config: ProjectConfig::default(),
             system_config: SystemConfig::default(),
             unit_test_template: None,
         }
@@ -241,8 +241,8 @@ impl Project {
     }
 
     /// Attach a parsed project config to this project.
-    pub fn with_config(mut self, config: ProjectConfig) -> Self {
-        self.config = config;
+    pub fn with_project_config(mut self, config: ProjectConfig) -> Self {
+        self.project_config = config;
         self
     }
 
@@ -291,8 +291,8 @@ impl Project {
     }
 
     /// The fully parsed project config layer.
-    pub fn config(&self) -> &ProjectConfig {
-        &self.config
+    pub fn project_config(&self) -> &ProjectConfig {
+        &self.project_config
     }
 
     /// The fully parsed system config layer.
@@ -319,7 +319,7 @@ impl Project {
     ///
     /// The test root is used to resolve test identifiers.
     pub fn unit_tests_root(&self) -> Utf8PathBuf {
-        self.root().join(&self.config.unit_tests_root)
+        self.root().join(&self.project_config.unit_tests_root)
     }
 
     /// Returns the root path of the template directory.
@@ -682,7 +682,7 @@ mod tests {
             Utf8PathBuf::from_iter(["root", "tests", "a", "b", "test.typ"])
         );
 
-        let project = Project::new("root").with_config(ProjectConfig {
+        let project = Project::new("root").with_project_config(ProjectConfig {
             unit_tests_root: "foo".into(),
             ..Default::default()
         });
@@ -710,8 +710,8 @@ mod tests {
         TempTestEnv::run_no_check(
             |root| root.setup_dir("tests"),
             |root| {
-                let config = ProjectConfig::default();
-                validate_config(root, &config).unwrap();
+                let project_config = ProjectConfig::default();
+                validate_config(root, &project_config).unwrap();
             },
         );
     }
@@ -730,13 +730,13 @@ mod tests {
                     )
                     .build();
 
-                let config = ProjectConfig {
+                let project_config = ProjectConfig {
                     unit_tests_root: "qux".into(),
                     ..Default::default()
                 };
 
                 validate_manifest(root, &manifest).unwrap();
-                validate_config(root, &config).unwrap();
+                validate_config(root, &project_config).unwrap();
             },
         );
     }

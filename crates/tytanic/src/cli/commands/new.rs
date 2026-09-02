@@ -124,7 +124,9 @@ pub fn run(ctx: &mut Context, args: &Args) -> eyre::Result<()> {
                 &world,
                 &RenderOptions {
                     pixel_per_pt: Scalar::new(ppi_to_ppp(
-                        args.export.ppi.unwrap_or(project.config().defaults.ppi),
+                        args.export
+                            .ppi
+                            .unwrap_or(project.project_config().defaults.ppi),
                     )),
                     render_bleed: false,
                 },

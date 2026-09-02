@@ -239,7 +239,7 @@ impl Providers {
                     .is_some()
                     .then(|| template_file_provider(project, package_opts))
             }),
-            fonts: font_provider(font_opts, &project.config().defaults),
+            fonts: font_provider(font_opts, &project.project_config().defaults),
             datetime: datetime_provider(compile_opts)?,
         })
     }
